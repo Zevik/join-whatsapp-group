@@ -3,7 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>קבוצות וואטסאפ שכונתיות בירושלים</title>
+    <title>כל קבוצות הוואטסאפ של ירושלים</title>
+
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="כל קבוצות הוואטסאפ של ירושלים" />
+    <meta property="og:description" content="מצאו את כל קבוצות הוואטסאפ השכונתיות בירושלים" />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://whatsapp-jerusalem.github.io/Jerusalem-whatsapp/" />
+    <meta property="og:image" content="https://i.postimg.cc/dt5xQxdz/33.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.rtl.min.css" rel="stylesheet">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -17,7 +27,7 @@
         }
         .container {
             max-width: 900px;
-            margin-top: 1.5rem;
+            margin-top: 3rem;
             margin-bottom: 3rem;
             padding: 2rem;
             background-color: rgba(255, 255, 255, 0.95);
@@ -40,17 +50,15 @@
             border: 1px solid #ced4da;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         }
-        .results-list {
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            margin-top: 0.5rem;
-            padding: 0.5rem;
-            display: none;
-            background-color: #f8f9fa;
+        .intro-text {
+            font-size: 1.3rem;
+            line-height: 1.8;
+            margin: 2rem 0;
+            color: #495057;
         }
         .whatsapp-btn {
-            background-color: #25D366;
-            color: white;
+            background-color: #91ebe1;
+            color: black;
             border: none;
             padding: 1rem;
             border-radius: 8px;
@@ -60,9 +68,29 @@
             transition: all 0.3s ease;
         }
         .whatsapp-btn:hover {
-            background-color: #1ea952;
-            color: white;
+            background-color: #7ad4ca;
+            color: black;
             transform: translateY(-2px);
+        }
+        .footer-text {
+            font-size: 1rem;
+            color: #6c757d;
+            margin-top: 3rem;
+        }
+        .results-list {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            display: none;
+            background-color: #f8f9fa;
+        }
+        .link-style {
+            color: #007bff;
+            text-decoration: underline;
+        }
+        .link-style:hover {
+            color: #0056b3;
         }
         .card-body {
             position: relative;
@@ -74,22 +102,23 @@
         .neighborhood-btn:hover {
             transform: translateY(-2px);
         }
+        .footer-image {
+            display: block;
+            margin: 2rem auto;
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="text-center mb-4">
-            <h1 class="title-text">קבוצות וואטסאפ שכונתיות בירושלים</h1>
+        <div class="text-center mb-4" style="padding-top: 3rem;">
+            <h1 class="title-text">כל קבוצות הוואטסאפ של ירושלים</h1>
         </div>
 
         <div class="card shadow-sm">
             <div class="card-body">
-                <div class="mb-3">
-                    <input type="email" 
-                           id="email" 
-                           class="form-control search-input" 
-                           placeholder="הכניסו את כתובת המייל שלכם">
-                </div>
                 <input type="text" 
                        id="neighborhood-search" 
                        class="form-control search-input" 
@@ -97,15 +126,21 @@
                 <div id="search-results" class="results-list"></div>
             </div>
         </div>
+
+        <div class="intro-text">
+            <p>כדאי להצטרף לקבוצת הוואטסאפ הקהילתית של השכונה שלכם בלבד. להתייעץ, לשתף, לתת ולקבל ולהיות חלק מהקהילה.</p>
+        </div>
+
+        <div class="footer-text text-center">
+            <p>הפרסום מותר רק בימי שלישי ורק לתושבי השכונה עם עסק קטן בתוך השכונה. פרסום ביותר משכונה אחת או שלא בשכונה שלכם, יגרור, לצערנו, חסימה גורפת מכל השכונות. תודה על ההבנה!</p>
+        </div>
+
+        <img src="./image.jpg" alt="תמונה" class="footer-image">
     </div>
 
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+    <script src="./config.js"></script>
     <script>
-        // הגדרות
-        const CONFIG = {
-            SHEET_ID: '1ud-caGhwQfXj1W_YTgtiorkif745EJJmhvcqetnJpx0',
-            SHEET_NAME: 'groups'
-        };
-        
         let neighborhoods = {};
 
         async function loadNeighborhoods() {
@@ -117,8 +152,8 @@
                 const data = JSON.parse(text.substr(47).slice(0, -2));
                 
                 data.table.rows.forEach(row => {
-                    const name = row.c[1].v;  // עמודה B - שם שכונה
-                    const link = row.c[2].v;  // עמודה C - קישור
+                    const name = row.c[1].v;
+                    const link = row.c[2].v;
                     neighborhoods[name] = link;
                 });
                 
@@ -128,82 +163,37 @@
             }
         }
 
-        function createNeighborhoodButton(name, link) {
-            const button = document.createElement('a');
-            const email = document.getElementById('email').value.trim();
-            
-            if (!email) {
-                button.href = '#';
-                button.onclick = () => {
-                    alert('נא להזין כתובת מייל לפני בחירת שכונה');
-                    return false;
-                };
-            } else {
-                button.href = link;
-            }
-            
-            button.target = '_blank';
-            button.className = 'btn whatsapp-btn neighborhood-btn';
-            button.textContent = name;
-            return button;
-        }
-
         function initSearch() {
             const search = document.getElementById('neighborhood-search');
             const searchResults = document.getElementById('search-results');
-
+            
             search.addEventListener('input', function() {
                 const value = this.value.trim().toLowerCase();
                 console.log('Input value:', value);
 
-                let matchedNeighborhoods = [];
-
-                if (value === 'כל') {
-                    if (neighborhoods['כל העיר']) {
-                        matchedNeighborhoods = ['כל העיר'];
-                    }
-                } else {
-                    matchedNeighborhoods = Object.keys(neighborhoods).filter(n =>
-                        n.toLowerCase().includes(value) &&
-                        value.length > 1 &&
-                        n !== 'כל העיר'
-                    );
-                }
-
+                const matchedNeighborhoods = Object.keys(neighborhoods).filter(n => 
+                    n.toLowerCase().includes(value) && value.length > 1
+                );
+                
+                console.log('Matched neighborhoods:', matchedNeighborhoods);
+                
                 searchResults.innerHTML = '';
-
-                matchedNeighborhoods.forEach(name => {
-                    const button = createNeighborhoodButton(name, neighborhoods[name]);
-                    searchResults.appendChild(button);
-                });
-
-                if (value !== 'כל' && matchedNeighborhoods.length > 0 && neighborhoods['כל העיר']) {
-                    const allCityButton = createNeighborhoodButton('כל העיר', neighborhoods['כל העיר']);
-                    searchResults.appendChild(allCityButton);
-                }
-
-                searchResults.style.display = matchedNeighborhoods.length > 0 ? 'block' : 'none';
                 if (matchedNeighborhoods.length > 0) {
+                    matchedNeighborhoods.forEach(name => {
+                        const link = neighborhoods[name];
+                        const button = document.createElement('a');
+                        button.href = link;
+                        button.target = '_blank';
+                        button.className = 'btn whatsapp-btn neighborhood-btn';
+                        button.textContent = name;
+                        searchResults.appendChild(button);
+                    });
+                    searchResults.style.display = 'block';
                     searchResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                } else {
+                    searchResults.style.display = 'none';
                 }
             });
-        }
-
-        async function logToSheet(email, neighborhood) {
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
-            
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        email: email,
-                        neighborhood: neighborhood
-                    })
-                });
-            } catch (error) {
-                console.error('Error logging to sheet:', error);
-            }
         }
 
         window.addEventListener('load', async () => {
@@ -211,5 +201,6 @@
             initSearch();
         });
     </script>
+    
 </body>
 </html>
