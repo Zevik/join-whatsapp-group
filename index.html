@@ -189,6 +189,23 @@
             });
         }
 
+        async function logToSheet(email, neighborhood) {
+            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
+            
+            try {
+                await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    body: JSON.stringify({
+                        email: email,
+                        neighborhood: neighborhood
+                    })
+                });
+            } catch (error) {
+                console.error('Error logging to sheet:', error);
+            }
+        }
+
         window.addEventListener('load', async () => {
             await loadNeighborhoods();
             initSearch();
