@@ -187,28 +187,25 @@ async function loadNeighborhoods() {
 }
 
 async function logToSheet(email, neighborhood) {
-    const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/crm!A:D:append`;
-    const timestamp = new Date().toISOString();
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
     
     console.log('Sending data:', { email, neighborhood });
     
     try {
-        const response = await fetch(API_URL, {
+        // שימוש בטופס במקום JSON
+        const formData = new URLSearchParams();
+        formData.append('email', email);
+        formData.append('neighborhood', neighborhood);
+        
+        const response = await fetch(SCRIPT_URL, {
             method: 'POST',
-            headers: {
-                'Authorization': `Bearer YOUR_ACCESS_TOKEN`,
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                values: [[timestamp, email, neighborhood, 'לא']]
-            })
+            mode: 'no-cors',
+            body: formData
         });
         
+        // במצב no-cors אנחנו לא יכולים לקרוא את התשובה, אז נניח שהצליח
         console.log('Response:', response);
-        if (response.ok) {
-            return true;
-        }
-        throw new Error('Failed to log data');
+        return true;
     } catch (error) {
         console.error('Error in logToSheet:', error);
         throw error;
