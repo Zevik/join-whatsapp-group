@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>קבוצות וואטסאפ שכונתיות בירושלים</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex items-center justify-center px-4">
+        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
+            <h1 class="text-2xl font-bold text-center mb-8">קבוצות וואטסאפ שכונתיות בירושלים</h1>
+            
+            <div class="mb-6 text-center text-gray-600">
+                רשמו את המייל ותקבלו קישור הצטרפות לקבוצת השכונה שלכם
+            </div>
+
+            <form id="joinForm" class="space-y-6">
+                <div>
+                    <input type="email" id="email" required
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="כתובת מייל">
+                </div>
+                
+                <div class="relative">
+                    <input type="text" id="neighborhood" required list="neighborhoods"
+                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="בחרו שכונה">
+                    <datalist id="neighborhoods"></datalist>
+                </div>
+
+                <button type="submit" 
+                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+                    שלחו לי את הקישור
+                </button>
+            </form>
+
+            <div id="message" class="mt-4 text-center hidden"></div>
+        </div>
+    </div>
+
+    <script>
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
+        const form = document.getElementById('joinForm');
+        const messageDiv = document.getElementById('message');
+        
+        // טעינת רשימת השכונות
+        fetch(SCRIPT_URL)
+            .then(response => response.json())
+            .then(data => {
+                const datalist = document.getElementById('neighborhoods');
+                data.neighborhoods.forEach(neighborhood => {
+                    const option = document.createElement('option');
+                    option.value = neighborhood;
+                    datalist.appendChild(option);
+                });
+            });
+
+        form.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const submitButton = form.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.textContent;
+            submitButton.disabled = true;
+            submitButton.textContent = 'שולח...';
+            
+            try {
+                const response = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({
+                        email: document.getElementById('email').value,
+                        neighborhood: document.getElementById('neighborhood').value
+                    })
+                });
+                
+                const data = await response.json();
+                messageDiv.textContent = data.message;
+                messageDiv.className = `mt-4 text-center ${data.success ? 'text-green-600' : 'text-red-600'}`;
+                messageDiv.classList.remove('hidden');
+                
+                if (data.success) {
+                    form.reset();
+                }
+            } catch (error) {
+                messageDiv.textContent = 'אירעה שגיאה, אנא נסו שוב מאוחר יותר';
+                messageDiv.className = 'mt-4 text-center text-red-600';
+                messageDiv.classList.remove('hidden');
+            }
+            
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText;
+        });
+    </script>
+</body>
+</html>
