@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>קבוצות וואטסאפ שכונתיות בירושלים</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 </head>
 <body class="bg-gray-50">
     <div class="min-h-screen flex items-center justify-center px-4">
@@ -24,10 +26,10 @@
                 </div>
                 
                 <div class="relative">
-                    <input type="text" id="neighborhood" required list="neighborhoods"
+                    <input type="text" id="neighborhood-search" required
                         class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="בחרו שכונה">
-                    <datalist id="neighborhoods"></datalist>
+                        placeholder="יש להקליד את שם השכונה...">
+                    <div id="search-results" class="results-list"></div>
                 </div>
 
                 <button type="submit" 
@@ -42,21 +44,35 @@
 
     <script>
         const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
+        let neighborhoods = {};
+        let neighborhoodNames = [];
+
+        async function loadNeighborhoods() {
+            try {
+                const response = await fetch(SCRIPT_URL);
+                const data = await response.json();
+                neighborhoodNames = data.neighborhoods;
+                
+                // הגדרת ההשלמה האוטומטית עם jQuery UI
+                $("#neighborhood-search").autocomplete({
+                    source: neighborhoodNames,
+                    minLength: 2,
+                    select: function(event, ui) {
+                        const selectedName = ui.item.value;
+                        if (neighborhoods[selectedName]) {
+                            const searchResults = document.getElementById('search-results');
+                            searchResults.innerHTML = '';
+                        }
+                    }
+                });
+            } catch (error) {
+                console.error('Error loading neighborhoods:', error);
+            }
+        }
+
         const form = document.getElementById('joinForm');
         const messageDiv = document.getElementById('message');
         
-        // טעינת רשימת השכונות
-        fetch(SCRIPT_URL)
-            .then(response => response.json())
-            .then(data => {
-                const datalist = document.getElementById('neighborhoods');
-                data.neighborhoods.forEach(neighborhood => {
-                    const option = document.createElement('option');
-                    option.value = neighborhood;
-                    datalist.appendChild(option);
-                });
-            });
-
         form.addEventListener('submit', async (e) => {
             e.preventDefault();
             
@@ -70,7 +86,7 @@
                     method: 'POST',
                     body: JSON.stringify({
                         email: document.getElementById('email').value,
-                        neighborhood: document.getElementById('neighborhood').value
+                        neighborhood: document.getElementById('neighborhood-search').value
                     })
                 });
                 
@@ -91,6 +107,9 @@
             submitButton.disabled = false;
             submitButton.textContent = originalButtonText;
         });
+
+        // טעינת השכונות בעת טעינת הדף
+        window.addEventListener('load', loadNeighborhoods);
     </script>
 </body>
 </html>
