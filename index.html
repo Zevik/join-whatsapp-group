@@ -4,112 +4,189 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>קבוצות וואטסאפ שכונתיות בירושלים</title>
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
-    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alef&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Alef', sans-serif;
+            color: #343a40;
+            padding: 1rem;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            margin-top: 1.5rem;
+            margin-bottom: 3rem;
+            padding: 2rem;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+            overflow: hidden;
+        }
+        .title-text {
+            font-size: 2.5rem;
+            color: #007bff;
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        .search-input {
+            padding: 1.2rem;
+            font-size: 1.2rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            border: 1px solid #ced4da;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        .results-list {
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            display: none;
+            background-color: #f8f9fa;
+        }
+        .whatsapp-btn {
+            background-color: #25D366;
+            color: white;
+            border: none;
+            padding: 1rem;
+            border-radius: 8px;
+            width: 100%;
+            margin-top: 0.5rem;
+            font-size: 1.3rem;
+            transition: all 0.3s ease;
+        }
+        .whatsapp-btn:hover {
+            background-color: #1ea952;
+            color: white;
+            transform: translateY(-2px);
+        }
+        .card-body {
+            position: relative;
+        }
+        .neighborhood-btn {
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        .neighborhood-btn:hover {
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
-<body class="bg-gray-50">
-    <div class="min-h-screen flex items-center justify-center px-4">
-        <div class="max-w-md w-full bg-white rounded-lg shadow-lg p-8">
-            <h1 class="text-2xl font-bold text-center mb-8">קבוצות וואטסאפ שכונתיות בירושלים</h1>
-            
-            <div class="mb-6 text-center text-gray-600">
-                רשמו את המייל ותקבלו קישור הצטרפות לקבוצת השכונה שלכם
+<body>
+    <div class="container">
+        <div class="text-center mb-4">
+            <h1 class="title-text">קבוצות וואטסאפ שכונתיות בירושלים</h1>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="mb-3">
+                    <input type="email" 
+                           id="email" 
+                           class="form-control search-input" 
+                           placeholder="הכניסו את כתובת המייל שלכם">
+                </div>
+                <input type="text" 
+                       id="neighborhood-search" 
+                       class="form-control search-input" 
+                       placeholder="הקלידו את שם השכונה...">
+                <div id="search-results" class="results-list"></div>
             </div>
-
-            <form id="joinForm" class="space-y-6">
-                <div>
-                    <input type="email" id="email" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="כתובת מייל">
-                </div>
-                
-                <div class="relative">
-                    <input type="text" id="neighborhood-search" required
-                        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="יש להקליד את שם השכונה...">
-                    <div id="search-results" class="results-list"></div>
-                </div>
-
-                <button type="submit" 
-                    class="w-full bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
-                    שלחו לי את הקישור
-                </button>
-            </form>
-
-            <div id="message" class="mt-4 text-center hidden"></div>
         </div>
     </div>
 
     <script>
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
         let neighborhoods = {};
-        let neighborhoodNames = [];
 
         async function loadNeighborhoods() {
+            const SHEET_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${CONFIG.SHEET_NAME}`;
+
             try {
-                const response = await fetch(SCRIPT_URL);
-                const data = await response.json();
-                neighborhoodNames = data.neighborhoods;
+                const response = await fetch(SHEET_URL);
+                const text = await response.text();
+                const data = JSON.parse(text.substr(47).slice(0, -2));
                 
-                // הגדרת ההשלמה האוטומטית עם jQuery UI
-                $("#neighborhood-search").autocomplete({
-                    source: neighborhoodNames,
-                    minLength: 2,
-                    select: function(event, ui) {
-                        const selectedName = ui.item.value;
-                        if (neighborhoods[selectedName]) {
-                            const searchResults = document.getElementById('search-results');
-                            searchResults.innerHTML = '';
-                        }
-                    }
+                data.table.rows.forEach(row => {
+                    const name = row.c[1].v;  // עמודה B - שם שכונה
+                    const link = row.c[2].v;  // עמודה C - קישור
+                    neighborhoods[name] = link;
                 });
+                
+                console.log('Neighborhoods loaded:', Object.keys(neighborhoods).length);
             } catch (error) {
-                console.error('Error loading neighborhoods:', error);
+                console.error('Error loading data:', error);
             }
         }
 
-        const form = document.getElementById('joinForm');
-        const messageDiv = document.getElementById('message');
-        
-        form.addEventListener('submit', async (e) => {
-            e.preventDefault();
+        function createNeighborhoodButton(name, link) {
+            const button = document.createElement('a');
+            const email = document.getElementById('email').value.trim();
             
-            const submitButton = form.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.textContent;
-            submitButton.disabled = true;
-            submitButton.textContent = 'שולח...';
-            
-            try {
-                const response = await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({
-                        email: document.getElementById('email').value,
-                        neighborhood: document.getElementById('neighborhood-search').value
-                    })
-                });
-                
-                const data = await response.json();
-                messageDiv.textContent = data.message;
-                messageDiv.className = `mt-4 text-center ${data.success ? 'text-green-600' : 'text-red-600'}`;
-                messageDiv.classList.remove('hidden');
-                
-                if (data.success) {
-                    form.reset();
-                }
-            } catch (error) {
-                messageDiv.textContent = 'אירעה שגיאה, אנא נסו שוב מאוחר יותר';
-                messageDiv.className = 'mt-4 text-center text-red-600';
-                messageDiv.classList.remove('hidden');
+            if (!email) {
+                button.href = '#';
+                button.onclick = () => {
+                    alert('נא להזין כתובת מייל לפני בחירת שכונה');
+                    return false;
+                };
+            } else {
+                button.href = link;
             }
             
-            submitButton.disabled = false;
-            submitButton.textContent = originalButtonText;
-        });
+            button.target = '_blank';
+            button.className = 'btn whatsapp-btn neighborhood-btn';
+            button.textContent = name;
+            return button;
+        }
 
-        // טעינת השכונות בעת טעינת הדף
-        window.addEventListener('load', loadNeighborhoods);
+        function initSearch() {
+            const search = document.getElementById('neighborhood-search');
+            const searchResults = document.getElementById('search-results');
+
+            search.addEventListener('input', function() {
+                const value = this.value.trim().toLowerCase();
+                console.log('Input value:', value);
+
+                let matchedNeighborhoods = [];
+
+                if (value === 'כל') {
+                    if (neighborhoods['כל העיר']) {
+                        matchedNeighborhoods = ['כל העיר'];
+                    }
+                } else {
+                    matchedNeighborhoods = Object.keys(neighborhoods).filter(n =>
+                        n.toLowerCase().includes(value) &&
+                        value.length > 1 &&
+                        n !== 'כל העיר'
+                    );
+                }
+
+                searchResults.innerHTML = '';
+
+                matchedNeighborhoods.forEach(name => {
+                    const button = createNeighborhoodButton(name, neighborhoods[name]);
+                    searchResults.appendChild(button);
+                });
+
+                if (value !== 'כל' && matchedNeighborhoods.length > 0 && neighborhoods['כל העיר']) {
+                    const allCityButton = createNeighborhoodButton('כל העיר', neighborhoods['כל העיר']);
+                    searchResults.appendChild(allCityButton);
+                }
+
+                searchResults.style.display = matchedNeighborhoods.length > 0 ? 'block' : 'none';
+                if (matchedNeighborhoods.length > 0) {
+                    searchResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            });
+        }
+
+        window.addEventListener('load', async () => {
+            await loadNeighborhoods();
+            initSearch();
+        });
     </script>
 </body>
 </html>
