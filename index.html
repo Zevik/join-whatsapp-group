@@ -168,24 +168,28 @@
         }
 
 async function logToSheet(email, neighborhood) {
-    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
+    const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/crm!A:D:append`;
+    const timestamp = new Date().toISOString();
     
     console.log('Sending data:', { email, neighborhood });
     
     try {
-        // שינוי קטן באופן שליחת הנתונים
-        const formData = new FormData();
-        formData.append('email', email);
-        formData.append('neighborhood', neighborhood);
-        
-        const response = await fetch(SCRIPT_URL, {
+        const response = await fetch(API_URL, {
             method: 'POST',
-            mode: 'no-cors',
-            body: formData
+            headers: {
+                'Authorization': `Bearer YOUR_ACCESS_TOKEN`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                values: [[timestamp, email, neighborhood, 'לא']]
+            })
         });
         
         console.log('Response:', response);
-        return true;
+        if (response.ok) {
+            return true;
+        }
+        throw new Error('Failed to log data');
     } catch (error) {
         console.error('Error in logToSheet:', error);
         throw error;
