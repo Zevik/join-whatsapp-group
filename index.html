@@ -167,22 +167,27 @@
             }
         }
 
-        async function logToSheet(email, neighborhood) {
-            const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
-            
-            try {
-                await fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    body: JSON.stringify({
-                        email: email,
-                        neighborhood: neighborhood
-                    })
-                });
-            } catch (error) {
-                console.error('Error logging to sheet:', error);
-            }
-        }
+   async function logToSheet(email, neighborhood) {
+    const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby5JdrqUhC5bdXiheYgBj79XsFs8UJSItIBCnK7EqTHj3SteNTeiyn6ZL0-_GqohxqcfA/exec';
+    
+    console.log('Sending data:', { email, neighborhood });  // לוג נתונים נשלחים
+    
+    try {
+        const response = await fetch(SCRIPT_URL + '?' + new URLSearchParams({
+            email: email,
+            neighborhood: neighborhood
+        }), {
+            method: 'POST',
+            mode: 'no-cors'  // הוספנו mode: 'no-cors'
+        });
+        
+        console.log('Response:', response);  // לוג התשובה
+        return true;
+    } catch (error) {
+        console.error('Error in logToSheet:', error);  // לוג שגיאה
+        throw error;
+    }
+}
 
         function createNeighborhoodButton(name, link) {
             const button = document.createElement('a');
