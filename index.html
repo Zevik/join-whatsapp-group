@@ -184,40 +184,41 @@
             }
         }
 
+        function createNeighborhoodButton(name, link) {
+            const button = document.createElement('a');
+            button.href = link;
+            button.target = '_blank';
+            button.className = 'btn whatsapp-btn neighborhood-btn';
+            button.textContent = name;
+            
+            button.onclick = (e) => {
+                const email = document.getElementById('email').value.trim();
+                if (!email) {
+                    e.preventDefault();
+                    alert('נא להזין כתובת מייל לפני בחירת שכונה');
+                    return false;
+                }
+                logToSheet(email, name);
+            };
+            
+            return button;
+        }
+
         function initSearch() {
             const search = document.getElementById('neighborhood-search');
             const searchResults = document.getElementById('search-results');
             
             search.addEventListener('input', function() {
                 const value = this.value.trim().toLowerCase();
-                console.log('Input value:', value);
-
                 const matchedNeighborhoods = Object.keys(neighborhoods).filter(n => 
                     n.toLowerCase().includes(value) && value.length > 1
                 );
                 
-                console.log('Matched neighborhoods:', matchedNeighborhoods);
-                
                 searchResults.innerHTML = '';
                 if (matchedNeighborhoods.length > 0) {
                     matchedNeighborhoods.forEach(name => {
-                        const link = neighborhoods[name];
-                        const button = document.createElement('a');
-                        button.className = 'btn whatsapp-btn neighborhood-btn';
-                        button.textContent = name;
+                        const button = createNeighborhoodButton(name, neighborhoods[name]);
                         searchResults.appendChild(button);
-
-                        button.addEventListener('click', (e) => {
-                            const email = document.getElementById('email').value.trim();
-                            if (!email) {
-                                e.preventDefault();
-                                alert('נא להזין כתובת מייל לפני בחירת שכונה');
-                            } else {
-                                button.href = link;
-                                button.target = '_blank';
-                                logToSheet(email, name);
-                            }
-                        });
                     });
                     searchResults.style.display = 'block';
                     searchResults.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
