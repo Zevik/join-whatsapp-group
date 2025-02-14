@@ -147,25 +147,44 @@
     <script>
         let neighborhoods = {};
 
-        async function loadNeighborhoods() {
-            const SHEET_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=${CONFIG.SHEET_NAME}`;
+async function loadNeighborhoods() {
+    try {
+        // טעינת קבוצות אמיתיות
+        const GROUPS_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=groups`;
+        const FAKE_URL = `https://docs.google.com/spreadsheets/d/${CONFIG.SHEET_ID}/gviz/tq?tqx=out:json&sheet=more`;
 
-            try {
-                const response = await fetch(SHEET_URL);
-                const text = await response.text();
-                const data = JSON.parse(text.substr(47).slice(0, -2));
-                
-                data.table.rows.forEach(row => {
-                    const name = row.c[1].v;
-                    const link = row.c[2].v;
-                    neighborhoods[name] = link;
-                });
-                
-                console.log('Neighborhoods loaded:', Object.keys(neighborhoods).length);
-            } catch (error) {
-                console.error('Error loading data:', error);
+        // טעינת קבוצות אמיתיות
+        const groupsResponse = await fetch(GROUPS_URL);
+        const groupsText = await groupsResponse.text();
+        const groupsData = JSON.parse(groupsText.substr(47).slice(0, -2));
+        
+        // טעינת קבוצות דמה
+        const fakeResponse = await fetch(FAKE_URL);
+        const fakeText = await fakeResponse.text();
+        const fakeData = JSON.parse(fakeText.substr(47).slice(0, -2));
+        
+        // הוספת קבוצות אמיתיות
+        groupsData.table.rows.forEach(row => {
+            if (row.c[1] && row.c[1].v) {  // בדיקה שיש ערך בעמודה B
+                const name = row.c[1].v;
+                const link = row.c[2] ? row.c[2].v : '';
+                neighborhoods[name] = link;
             }
-        }
+        });
+        
+        // הוספת קבוצות דמה
+        fakeData.table.rows.forEach(row => {
+            if (row.c[0] && row.c[0].v) {  // בדיקה שיש ערך בעמודה A
+                const name = row.c[0].v;
+                neighborhoods[name] = FAKE_GROUP_LINK;  // קישור דמה קבוע
+            }
+        });
+        
+        console.log('Neighborhoods loaded:', Object.keys(neighborhoods).length);
+    } catch (error) {
+        console.error('Error loading data:', error);
+    }
+}
 
 async function logToSheet(email, neighborhood) {
     const API_URL = `https://sheets.googleapis.com/v4/spreadsheets/${CONFIG.SHEET_ID}/values/crm!A:D:append`;
